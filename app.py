@@ -4,6 +4,7 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import numpy as np
 
 
 st.set_page_config(
@@ -34,6 +35,52 @@ SAVINGS_CATEGORY_COLORS = {
     "<$1/month": "#C0392B",
     "Unknown": "#95A5A6",
 }
+
+# Effort factor mappings
+EFFORT_FACTOR_MAP = {
+    "Low": 1,
+    "Medium": 2,
+    "High": 6,
+    "VeryHigh": 10,
+}
+
+
+def get_effort_factor(effort):
+    """Get effort factor from implementation effort string"""
+    if pd.isna(effort):
+        return 1
+    effort_str = str(effort).strip()
+    return EFFORT_FACTOR_MAP.get(effort_str, 1)
+
+
+def get_recommendation_count_factor(count):
+    """Map recommendation count to factor"""
+    if count <= 100:
+        return 1.0
+    elif count <= 500:
+        return 1.5
+    elif count <= 1500:
+        return 2.0
+    else:
+        return 3.0
+
+
+def calculate_priority_score(row):
+    """Calculate priority score based on formula:
+    Priority Score = (TotalEstimatedMonthlySavings^1.2) / ((effortFactor × recommendationCountFactor)^2)
+    """
+    savings = row.get('totalEstimatedMonthlySavings', 0)
+    effort_factor = row.get('effortFactor', 1)
+    count_factor = row.get('recommendationCountFactor', 1.0)
+    
+    if savings <= 0 or effort_factor == 0 or count_factor == 0:
+        return 0
+    
+    numerator = savings ** 1.2
+    denominator = (effort_factor * count_factor) ** 2
+    
+    return numerator / denominator if denominator > 0 else 0
+
 
 # -----------------------------
 # Helpers
@@ -125,6 +172,9 @@ def load_data(uploaded_file):
 
     df["savingsValueCategory"] = df["estimatedMonthlySavings"].apply(classify_savings)
     df["estimatedAnnualSavings"] = df["estimatedMonthlySavings"].fillna(0) * 12
+    
+    # Add effort factor column
+    df["effortFactor"] = df["implementationEffort"].apply(get_effort_factor)
 
     if "tags" in df.columns:
         df["parsedTags"] = df["tags"].apply(parse_tags)
@@ -355,9 +405,36 @@ savings_by_category_and_effort = (
     .rename(columns={"estimatedMonthlySavings": "totalEstimatedMonthlySavings"})
 )
 
-# -----------------------------
+# Create priority score aggregation - CORRECT: Average effort factors properly grouped
+priority_agg = (
+    filtered_df.groupby(
+        ["currentResourceType", "actionType", "savingsValueCategory"],
+        dropna=False,
+        as_index=False,
+    ).agg({
+        "estimatedMonthlySavings": "sum",
+        "recommendationId": "count",
+        "effortFactor": "mean",  # Average effort factor for this specific combination
+    })
+    .rename(columns={
+        "estimatedMonthlySavings": "totalEstimatedMonthlySavings",
+        "recommendationId": "recommendationCount",
+        "effortFactor": "effortFactor",
+    })
+)
+
+# Calculate recommendation count factor for each group
+priority_agg["recommendationCountFactor"] = priority_agg["recommendationCount"].apply(
+    get_recommendation_count_factor
+)
+
+# Calculate priority score
+priority_agg["priorityScore"] = priority_agg.apply(calculate_priority_score, axis=1)
+
+# Sort by priority score
+priority_agg = priority_agg.sort_values("priorityScore", ascending=False)
+
 # Charts: CORA-style overview
-# -----------------------------
 row1_col1, row1_col2 = st.columns(2)
 with row1_col1:
     fig = make_bar_chart(
@@ -399,10 +476,6 @@ with row2_col2:
     )
     if fig:
         st.plotly_chart(fig, use_container_width=True)
-
-# -----------------------------
-# Additional requested panels
-# -----------------------------
 
 # Recommendation count by Savings Value Category
 
@@ -842,9 +915,159 @@ if not savings_effort_df.empty:
 else:
     st.info("No data available for the selected filters.")
 
-# -----------------------------
-# Detailed recommendations table
-# -----------------------------
+# NEW PANELS: Priority Score Analysis
+
+st.divider()
+st.header("Priority Score Analysis")
+
+st.markdown("""
+This section uses the following formula to calculate Priority Scores:
+
+**Priority Score = (TotalEstimatedMonthlySavings^1.2) / ((effortFactor × recommendationCountFactor)^2)**
+
+Where:
+- **Effort Factor**: Average of effort factors for recommendations in the group (Low=1, Medium=2, High=6, Very High=10)
+- **Recommendation Count Factor**: Based on total recommendations in the group (1-100 recs=1.0, 100-500=1.5, 500-1500=2.0, 1500+=3.0)
+
+Higher priority scores indicate better opportunities (high savings, lower effort, fewer recommendations to process).
+""")
+
+# Panel 1: Priority Score Summary Table
+st.subheader("Priority Score by Action Type / Resource Type / Savings Category")
+
+if not priority_agg.empty:
+    # Create display dataframe
+    display_df = priority_agg[[
+        "currentResourceType",
+        "actionType",
+        "savingsValueCategory",
+        "recommendationCount",
+        "totalEstimatedMonthlySavings",
+        "effortFactor",
+        "recommendationCountFactor",
+        "priorityScore",
+    ]].copy()
+    
+    # Rename columns for display
+    display_df.columns = [
+        "Resource Type",
+        "Action Type",
+        "Savings Category",
+        "# Recommendations",
+        "Total Monthly Savings",
+        "Avg Effort Factor",
+        "Count Factor",
+        "Priority Score",
+    ]
+    
+    # Format numeric columns
+    display_df["Total Monthly Savings"] = display_df["Total Monthly Savings"].apply(
+        lambda x: format_currency(x, currency)
+    )
+    display_df["Priority Score"] = display_df["Priority Score"].round(2)
+    display_df["Avg Effort Factor"] = display_df["Avg Effort Factor"].round(2)
+    display_df["Count Factor"] = display_df["Count Factor"].round(2)
+    
+    st.dataframe(
+        display_df,
+        use_container_width=True,
+        hide_index=True,
+    )
+else:
+    st.info("No data available for priority score analysis.")
+
+st.divider()
+
+# Panel 2: Drill-down table for individual recommendations
+st.subheader("Individual Recommendations Drill-Down")
+
+st.markdown("Filter individual recommendations by Action Type, Resource Type, and Savings Category.")
+
+drill_df = filtered_df.copy()
+
+# Create filter columns
+filter_col1, filter_col2, filter_col3 = st.columns(3)
+
+with filter_col1:
+    available_actions = sorted([x for x in drill_df["actionType"].dropna().unique().tolist()])
+    selected_action = st.selectbox(
+        "Filter by Action Type",
+        options=["All"] + available_actions,
+        key="drill_action_type",
+    )
+
+with filter_col2:
+    available_resources = sorted([x for x in drill_df["currentResourceType"].dropna().unique().tolist()])
+    selected_resource = st.selectbox(
+        "Filter by Resource Type",
+        options=["All"] + available_resources,
+        key="drill_resource_type",
+    )
+
+with filter_col3:
+    available_categories = sorted([x for x in drill_df["savingsValueCategory"].dropna().unique().tolist()])
+    selected_category = st.selectbox(
+        "Filter by Savings Category",
+        options=["All"] + available_categories,
+        key="drill_savings_category",
+    )
+
+# Apply filters
+drill_display_df = drill_df.copy()
+
+if selected_action != "All":
+    drill_display_df = drill_display_df[drill_display_df["actionType"] == selected_action]
+
+if selected_resource != "All":
+    drill_display_df = drill_display_df[drill_display_df["currentResourceType"] == selected_resource]
+
+if selected_category != "All":
+    drill_display_df = drill_display_df[drill_display_df["savingsValueCategory"] == selected_category]
+
+# Sort by estimated monthly savings
+drill_display_df = drill_display_df.sort_values("estimatedMonthlySavings", ascending=False)
+
+if not drill_display_df.empty:
+    preferred_columns = [
+        "estimatedMonthlySavings",
+        "estimatedAnnualSavings",
+        "savingsValueCategory",
+        "accountId",
+        "accountName",
+        "region",
+        "currentResourceType",
+        "recommendedResourceType",
+        "actionType",
+        "implementationEffort",
+        "effortFactor",
+        "estimatedMonthlyCost",
+        "estimatedSavingsPercentage",
+        "resourceId",
+        "currentResourceSummary",
+        "recommendedResourceSummary",
+        "restartNeeded",
+        "rollbackPossible",
+        "source",
+        "lastRefreshTimestamp",
+        "recommendationId",
+        "resourceArn",
+    ]
+    
+    display_columns = [c for c in preferred_columns if c in drill_display_df.columns]
+    
+    st.dataframe(
+        drill_display_df[display_columns],
+        use_container_width=True,
+        hide_index=True,
+    )
+    
+    st.markdown(f"**Showing {len(drill_display_df)} recommendations**")
+else:
+    st.info("No recommendations match the selected filters.")
+
+st.divider()
+
+# Detailed recommendations table (original)
 st.subheader("Detailed recommendations")
 
 preferred_columns = [
@@ -863,6 +1086,7 @@ preferred_columns = [
     "estimatedMonthlyCost",
     "estimatedSavingsPercentage",
     "implementationEffort",
+    "effortFactor",
     "restartNeeded",
     "rollbackPossible",
     "source",
@@ -886,9 +1110,7 @@ st.dataframe(
     hide_index=True,
 )
 
-# -----------------------------
 # Download enriched data
-# -----------------------------
 st.subheader("Download enriched dataset")
 csv_bytes = filtered_df.to_csv(index=False).encode("utf-8")
 st.download_button(
