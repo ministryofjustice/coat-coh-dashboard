@@ -21,8 +21,13 @@ helm-deploy:
         --timeout 10m \
         --namespace coat-coh-dashboard-dev \
         --values=helm/coat-coh-dashboard/values-dev.yaml \
-        --set app.deployment.image.repository=coat-coh-dashboard \
+        --set app.deployment.image.repository=levgorbunov1/coat-coh-dashboard \
         --set app.deployment.image.tag=v0.1
 
 helm uninstall:
 	helm uninstall coat-coh-dashboard --namespace coat-coh-dashboard-dev
+
+push-dockerhub:
+	docker login && \
+	docker tag coat-coh-dashboard:v0.1 levgorbunov1/coat-coh-dashboard:v0.1 && \
+	docker push levgorbunov1/coat-coh-dashboard:v0.1
