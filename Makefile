@@ -24,10 +24,12 @@ helm-deploy:
         --set app.deployment.image.repository=levgorbunov1/coat-coh-dashboard \
         --set app.deployment.image.tag=v0.1
 
-helm uninstall:
+helm-uninstall:
 	helm uninstall coat-coh-dashboard --namespace coat-coh-dashboard-dev
 
 push-dockerhub:
-	docker login && \
-	docker tag coat-coh-dashboard:v0.1 levgorbunov1/coat-coh-dashboard:v0.1 && \
-	docker push levgorbunov1/coat-coh-dashboard:v0.1
+	docker login
+	docker buildx build \
+		--platform linux/amd64 \
+		-t levgorbunov1/coat-coh-dashboard:v0.1 \
+		--push .
