@@ -1,0 +1,9 @@
+app:
+  ingress:
+    primaryHost: "coat-coh-dashboard-dev.cloud-platform.service.justice.gov.uk"
+
+  deployment:
+    replicaCount: 2
+    serviceAccountName: "cd-serviceaccount"
+    env:
+      APP_ENV: "development"

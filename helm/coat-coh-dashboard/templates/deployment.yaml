@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "application.fullname" . }}
+  labels:
+    {{- include "application.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.app.deployment.replicaCount }}
+  selector:
+    matchLabels: {{- include "application.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "application.selectorLabels" . | nindent 8 }}
+    spec:
+      # serviceAccountName created by the Cloud Platform environment
+      serviceAccountName: {{ .Values.app.deployment.serviceAccountName }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.app.deployment.image.repository }}:{{ .Values.app.deployment.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - "ALL"
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: APP_ENV
+              value: {{ .Values.app.deployment.env.APP_ENV | quote }}
+          ports:
+            - name: http
+              containerPort: 80
