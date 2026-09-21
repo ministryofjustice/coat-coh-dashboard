@@ -11,3 +11,18 @@ run:
 
 stop:
 	docker rm -f coat-coh-dashboard
+
+helm-deploy:
+	helm upgrade coat-coh-dashboard \
+        helm/coat-coh-dashboard \
+        --install \
+        --force \
+        --wait \
+        --timeout 10m \
+        --namespace coat-coh-dashboard-dev \
+        --values=helm/coat-coh-dashboard/values-dev.yaml \
+        --set app.deployment.image.repository=coat-coh-dashboard \
+        --set app.deployment.image.tag=v0.1
+
+helm uninstall:
+	helm uninstall coat-coh-dashboard --namespace coat-coh-dashboard-dev
