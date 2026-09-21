@@ -36,4 +36,4 @@ spec:
               value: {{ .Values.app.deployment.env.APP_ENV | quote }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8501

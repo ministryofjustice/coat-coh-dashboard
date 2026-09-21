@@ -6,6 +6,6 @@ metadata:
 spec:
   ports:
     - port: 80
-      targetPort: 8051
+      targetPort: 8501
       name: https
   selector: {{- include "application.selectorLabels" . | nindent 4 }}
