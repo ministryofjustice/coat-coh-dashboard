@@ -22,7 +22,10 @@ helm-deploy:
         --namespace coat-coh-dashboard-dev \
         --values=helm/coat-coh-dashboard/values-dev.yaml \
         --set app.deployment.image.repository=levgorbunov1/coat-coh-dashboard \
-        --set app.deployment.image.tag=v0.1
+        --set app.deployment.image.tag=v0.1 \
+		--set app.deployment.env.AUTH0_DOMAIN=$AUTH0_DOMAIN \
+		--set app.deployment.env.AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID \
+        --set app.deployment.env.AUTH0_CLIENT_SECRET=$AUTH0_CLIENT_SECRET
 
 helm-uninstall:
 	helm uninstall coat-coh-dashboard --namespace coat-coh-dashboard-dev

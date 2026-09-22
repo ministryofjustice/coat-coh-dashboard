@@ -34,6 +34,12 @@ spec:
           env:
             - name: APP_ENV
               value: {{ .Values.app.deployment.env.APP_ENV | quote }}
+            - name: AUTH0_CLIENT_ID
+              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_ID | quote }}
+            - name: AUTH0_CLIENT_SECRET
+              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_SECRET | quote }}
+            - name: AUTH0_DOMAIN
+              value: {{ .Values.app.deployment.env.AUTH0_DOMAIN | quote }}
           ports:
             - name: http
               containerPort: 8501
