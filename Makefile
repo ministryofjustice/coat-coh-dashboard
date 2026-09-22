@@ -12,6 +12,8 @@ run:
 		-e AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
 		-e AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
 		-e AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" \
+		-e APP_BASE_URL="http://localhost:8501" \
+		-e APP_ENV="local" \
 		coat-coh-dashboard:v0.1
 
 stop:
@@ -22,6 +24,7 @@ helm-deploy:
         helm/coat-coh-dashboard \
         --install \
         --force \
+		--server-side=false \
         --wait \
         --timeout 10m \
         --namespace coat-coh-dashboard-dev \

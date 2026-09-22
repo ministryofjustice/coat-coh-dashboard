@@ -1,24 +1,20 @@
 import logging
 import os
 import secrets
+import time
 from urllib.parse import quote_plus, urlencode
 
 import streamlit as st
 
 from authlib.integrations.requests_client import OAuth2Session
 
-# -----------------------------
-# Auth0 authentication
-# -----------------------------
-
 logger = logging.getLogger(__name__)
 
 AUTH0_CLIENT_ID = os.getenv("AUTH0_CLIENT_ID")
 AUTH0_CLIENT_SECRET = os.getenv("AUTH0_CLIENT_SECRET")
 AUTH0_DOMAIN = (os.getenv("AUTH0_DOMAIN") or "").strip().rstrip("/")
+APP_ENV = os.getenv("APP_ENV")
 
-# Optional local-development bypass:
-# AUTH_DISABLED=true streamlit run app.py
 AUTH_DISABLED = (os.getenv("AUTH_DISABLED") or "").strip().lower() in {
     "1",
     "true",
@@ -27,6 +23,38 @@ AUTH_DISABLED = (os.getenv("AUTH_DISABLED") or "").strip().lower() in {
 }
 
 AUTH0_SCOPE = "openid profile email"
+
+# In-memory store for pending OAuth states. Keyed by state value.
+# NOTE: this is process-local. It works for a single-replica deployment.
+# If you ever scale to multiple pods/replicas behind a load balancer without
+# sticky sessions, replace this with a shared store (e.g. Redis).
+_PENDING_STATES: dict[str, float] = {}
+_STATE_TTL_SECONDS = 300  # 5 minutes
+
+
+def _remember_state(state: str) -> None:
+    _cleanup_expired_states()
+    _PENDING_STATES[state] = time.time()
+
+
+def _consume_state(state: str | None) -> bool:
+    """Return True if state was pending and valid, removing it either way."""
+    _cleanup_expired_states()
+    if not state:
+        return False
+    issued_at = _PENDING_STATES.pop(state, None)
+    return issued_at is not None
+
+
+def _cleanup_expired_states() -> None:
+    now = time.time()
+    expired = [
+        state
+        for state, issued_at in _PENDING_STATES.items()
+        if now - issued_at > _STATE_TTL_SECONDS
+    ]
+    for state in expired:
+        _PENDING_STATES.pop(state, None)
 
 
 def get_application_url() -> str:
@@ -44,8 +72,12 @@ def get_application_url() -> str:
 
     try:
         headers = st.context.headers
-        forwarded_proto = headers.get("X-Forwarded-Proto", "https")
         forwarded_host = headers.get("X-Forwarded-Host") or headers.get("Host")
+
+        if APP_ENV == "local":
+            forwarded_proto = headers.get("X-Forwarded-Proto", "http")
+        else:
+            forwarded_proto = headers.get("X-Forwarded-Proto", "https")
 
         if forwarded_host:
             return f"{forwarded_proto.split(',')[0].strip()}://{forwarded_host}"
@@ -57,16 +89,10 @@ def get_application_url() -> str:
 
 
 def get_auth0_redirect_uri() -> str:
-    """Auth0 callback URL.
-
-    Streamlit receives the OAuth callback on the application root and exposes
-    the authorization code through st.query_params.
-    """
     return f"{get_application_url()}/"
 
 
 def validate_auth0_configuration() -> None:
-    """Fail clearly if Auth0 configuration is incomplete."""
     missing = [
         name
         for name, value in {
@@ -103,23 +129,19 @@ def create_auth0_login_url() -> str:
         nonce=secrets.token_urlsafe(32),
     )
 
-    # Store the state server-side to protect against CSRF.
-    st.session_state["auth0_state"] = state
+    # Store pending state server-side (survives the redirect round trip),
+    # not in st.session_state.
+    _remember_state(state)
 
     return authorization_url
 
 
 def exchange_auth0_code(code: str, returned_state: str | None) -> None:
     """Exchange the authorization code and load the authenticated user."""
-    expected_state = st.session_state.pop("auth0_state", None)
+    if not _consume_state(returned_state):
+        raise ValueError("Missing or invalid Auth0 OAuth state")
 
-    if not expected_state or not returned_state:
-        raise ValueError("Missing Auth0 OAuth state")
-
-    if not secrets.compare_digest(expected_state, returned_state):
-        raise ValueError("Invalid Auth0 OAuth state")
-
-    oauth = create_auth0_session(state=expected_state)
+    oauth = create_auth0_session(state=returned_state)
 
     token = oauth.fetch_token(
         f"https://{AUTH0_DOMAIN}/oauth/token",
@@ -136,7 +158,6 @@ def exchange_auth0_code(code: str, returned_state: str | None) -> None:
 
 
 def process_auth0_callback() -> None:
-    """Process the Auth0 callback query parameters once."""
     code = st.query_params.get("code")
     returned_state = st.query_params.get("state")
     error = st.query_params.get("error")
@@ -159,7 +180,6 @@ def process_auth0_callback() -> None:
         st.query_params.clear()
         raise RuntimeError("Unable to complete Auth0 login.") from None
 
-    # Remove code and state from the browser URL after successful login.
     st.query_params.clear()
 
 
@@ -178,7 +198,6 @@ def get_auth0_logout_url() -> str:
 
 
 def require_auth0_login() -> None:
-    """Require a valid Auth0 login before rendering the dashboard."""
     if AUTH_DISABLED:
         return
 
