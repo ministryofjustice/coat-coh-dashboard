@@ -9,9 +9,9 @@ build:
 run:
 	docker run -d -p 8501:8501 \
 		--name coat-coh-dashboard \
-		-e AUTH0_DOMAIN=$AUTH0_DOMAIN \
-		-e AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID \
-		-e AUTH0_CLIENT_SECRET=$AUTH0_CLIENT_SECRET \
+		-e AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
+		-e AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
+		-e AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" \
 		coat-coh-dashboard:v0.1
 
 stop:
@@ -28,9 +28,10 @@ helm-deploy:
         --values=helm/coat-coh-dashboard/values-dev.yaml \
         --set app.deployment.image.repository=levgorbunov1/coat-coh-dashboard \
         --set app.deployment.image.tag=v0.1 \
-		--set app.deployment.env.AUTH0_DOMAIN=$AUTH0_DOMAIN \
-		--set app.deployment.env.AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID \
-        --set app.deployment.env.AUTH0_CLIENT_SECRET=$AUTH0_CLIENT_SECRET
+		--set app.deployment.env.AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
+		--set app.deployment.env.AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
+        --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" \
+		--set app.deployment.env.APP_BASE_URL=coat-coh-dashboard-dev.cloud-platform.service.justice.gov.uk
 
 helm-uninstall:
 	helm uninstall coat-coh-dashboard --namespace coat-coh-dashboard-dev
