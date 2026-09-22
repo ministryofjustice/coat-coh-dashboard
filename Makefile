@@ -41,6 +41,7 @@ helm-uninstall:
 
 push-dockerhub:
 	docker login
+	docker tag coat-coh-dashboard:v0.1 levgorbunov1/coat-coh-dashboard:v0.1
 	docker buildx build \
 		--platform linux/amd64 \
 		-t levgorbunov1/coat-coh-dashboard:v0.1 \
