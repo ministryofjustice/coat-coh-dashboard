@@ -6,7 +6,7 @@ import plotly.express as px
 import streamlit as st
 import numpy as np
 
-from app.auth import require_auth0_login
+from auth import require_auth0_login
 
 st.set_page_config(
     page_title="AWS Cost Optimization Hub Dashboard",
