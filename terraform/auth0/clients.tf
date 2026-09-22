@@ -93,7 +93,7 @@ resource "auth0_client" "coat_coh_dashboard" {
   is_first_party                                       = true
   is_token_endpoint_ip_header_trusted                  = false
   logo_uri                                             = null
-  name                                                 = "COAT COH Dashboard"
+  name                                                 = "COAT Cost Optimisation Hub Dashboard"
   oidc_conformant                                      = true
   organization_discovery_methods                       = []
   organization_require_behavior                        = null
