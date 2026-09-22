@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [development, production]
+        environment: [development]
     concurrency:
       group: deploy-auth0-terraform-${{ matrix.environment }}
       cancel-in-progress: false
@@ -88,7 +88,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [development, production]
+        environment: [development]
         exclude:
           - environment: ${{ github.ref != 'refs/heads/main' && 'production' || '' }}
     concurrency:
