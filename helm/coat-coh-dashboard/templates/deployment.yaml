@@ -40,6 +40,8 @@ spec:
               value: {{ .Values.app.deployment.env.AUTH0_CLIENT_SECRET | quote }}
             - name: AUTH0_DOMAIN
               value: {{ .Values.app.deployment.env.AUTH0_DOMAIN | quote }}
+            - name: APP_BASE_URL
+              value: "https://{{ .Values.app.ingress.primaryHost }}"
           ports:
             - name: http
               containerPort: 8501

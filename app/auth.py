@@ -3,6 +3,8 @@ import os
 import secrets
 from urllib.parse import quote_plus, urlencode
 
+import streamlit as st
+
 from authlib.integrations.requests_client import OAuth2Session
 
 # -----------------------------

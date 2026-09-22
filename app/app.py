@@ -14,7 +14,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# require_auth0_login()
+require_auth0_login()
 
 st.title("AWS Cost Optimization Hub Recommendations Dashboard")
 st.caption("Local CORA-style dashboard for AWS Cost Optimization Hub CSV exports")

@@ -73,11 +73,11 @@ resource "auth0_client_grant" "auth0_actions_management_client_grant" {
 
 resource "auth0_client" "coat_coh_dashboard" {
   allowed_clients                                      = []
-  allowed_logout_urls                                  = var.environment == "development" ? ["https://${var.webapp_domain}/", "https://localhost:8501/"] : ["https://${var.webapp_domain}/"]
+  allowed_logout_urls                                  = var.environment == "development" ? ["https://${var.webapp_domain}/", "https://localhost:8501/", "http://localhost:8501/"] : ["https://${var.webapp_domain}/"]
   allowed_origins                                      = []
   app_type                                             = "regular_web"
   async_approval_notification_channels                 = []
-  callbacks                                            = var.environment == "development" ? ["https://localhost:8501/", "https://${var.webapp_domain}/"] : ["https://${var.webapp_domain}/"]
+  callbacks                                            = var.environment == "development" ? ["https://localhost:8501/", "http://localhost:8501/", "https://${var.webapp_domain}/"] : ["https://${var.webapp_domain}/"]
   client_aliases                                       = []
   client_metadata                                      = {}
   compliance_level                                     = null
@@ -106,7 +106,7 @@ resource "auth0_client" "coat_coh_dashboard" {
   sso                                                  = true
   sso_disabled                                         = false
   third_party_security_mode                            = null
-  web_origins                                          = var.environment == "development" ? ["https://${var.webapp_domain}", "https://localhost:8501"] : ["https://${var.webapp_domain}"]
+  web_origins                                          = var.environment == "development" ? ["https://${var.webapp_domain}", "https://localhost:8501", "http://localhost:8501"] : ["https://${var.webapp_domain}"]
   default_organization {
     disable         = true
     flows           = []
