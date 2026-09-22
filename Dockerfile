@@ -33,7 +33,7 @@ RUN python3 -m venv .venv && source .venv/bin/activate && \
     pip install -r requirements.txt
 
 # Copy application code
-COPY --chown=appuser:appgroup app.py app.py
+COPY --chown=appuser:appgroup app app
 
 # Environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -45,4 +45,4 @@ EXPOSE 8501
 # Healthcheck
 HEALTHCHECK --interval=60s --timeout=30s CMD curl -I -XGET http://localhost:8501 || exit 1
 
-ENTRYPOINT ["/home/coat-coh-dashboard/.venv/bin/streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+ENTRYPOINT ["/home/coat-coh-dashboard/.venv/bin/streamlit", "run", "./app/app.py", "--server.address=0.0.0.0", "--server.port=8501"]

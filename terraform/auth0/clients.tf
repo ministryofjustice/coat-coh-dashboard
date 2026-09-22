@@ -77,7 +77,7 @@ resource "auth0_client" "coat_coh_dashboard" {
   allowed_origins                                      = []
   app_type                                             = "regular_web"
   async_approval_notification_channels                 = []
-  callbacks                                            = var.environment == "development" ? ["https://localhost:8501/auth/callback", "https://${var.webapp_domain}/auth/callback"] : ["https://${var.webapp_domain}/auth/callback"]
+  callbacks                                            = var.environment == "development" ? ["https://localhost:8501/", "https://${var.webapp_domain}/"] : ["https://${var.webapp_domain}/"]
   client_aliases                                       = []
   client_metadata                                      = {}
   compliance_level                                     = null

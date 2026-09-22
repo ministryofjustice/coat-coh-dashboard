@@ -6,12 +6,15 @@ import plotly.express as px
 import streamlit as st
 import numpy as np
 
+from app.auth import require_auth0_login
 
 st.set_page_config(
     page_title="AWS Cost Optimization Hub Dashboard",
     page_icon="💰",
     layout="wide",
 )
+
+# require_auth0_login()
 
 st.title("AWS Cost Optimization Hub Recommendations Dashboard")
 st.caption("Local CORA-style dashboard for AWS Cost Optimization Hub CSV exports")
