@@ -40,8 +40,8 @@ helm-uninstall:
 	helm uninstall coat-coh-dashboard --namespace coat-coh-dashboard-dev
 
 push-dockerhub:
+	docker build -t levgorbunov1/coat-coh-dashboard:v0.1 .
 	docker login
-	docker tag coat-coh-dashboard:v0.1 levgorbunov1/coat-coh-dashboard:v0.1
 	docker buildx build \
 		--platform linux/amd64 \
 		-t levgorbunov1/coat-coh-dashboard:v0.1 \
