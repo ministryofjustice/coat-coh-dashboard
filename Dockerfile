@@ -13,6 +13,11 @@ RUN apk add --no-cache --no-progress \
   && apk update \
   && apk upgrade --no-cache --available
 
+# Install pipenv
+RUN pip install --no-cache-dir \
+  awscli==1.45.36 \
+  setuptools==83.0.0
+
 # Create user and group
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup -u 1051
 
