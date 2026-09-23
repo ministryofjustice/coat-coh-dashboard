@@ -4,6 +4,6 @@ app:
 
   deployment:
     replicaCount: 1
-    serviceAccountName: "coat-coh-dashboard"
+    serviceAccountName: "coat-coh-dashboard-dev"
     env:
       APP_ENV: "development"
