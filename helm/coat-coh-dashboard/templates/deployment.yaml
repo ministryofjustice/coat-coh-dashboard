@@ -42,6 +42,8 @@ spec:
               value: {{ .Values.app.deployment.env.AUTH0_DOMAIN | quote }}
             - name: APP_BASE_URL
               value: "https://{{ .Values.app.ingress.primaryHost }}"
+            - name: COH_REPORT_S3_URI
++              value: {{ .Values.app.deployment.env.COH_REPORT_S3_URI | quote }}
           ports:
             - name: http
               containerPort: 8501
