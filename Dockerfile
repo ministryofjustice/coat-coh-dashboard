@@ -13,11 +13,6 @@ RUN apk add --no-cache --no-progress \
   && apk update \
   && apk upgrade --no-cache --available
 
-# Install pipenv
-RUN pip install --no-cache-dir \
-  awscli==1.45.36 \
-  setuptools==83.0.0
-
 # Create user and group
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup -u 1051
 
@@ -36,6 +31,8 @@ COPY --chown=appuser:appgroup requirements.txt ./
 # Install dependencies
 RUN python3 -m venv .venv && source .venv/bin/activate && \
     pip install -r requirements.txt
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy application code
 COPY --chown=appuser:appgroup app app

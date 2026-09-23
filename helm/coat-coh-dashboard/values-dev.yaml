@@ -7,3 +7,4 @@ app:
     serviceAccountName: "coat-coh-dashboard-dev"
     env:
       APP_ENV: "development"
+      APP_BASE_URL: "coat-coh-dashboard-dev.cloud-platform.service.justice.gov.uk"
