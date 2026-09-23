@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "application.fullname" . }}
+  labels:
+    {{- include "application.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.app.deployment.replicaCount }}
+  selector:
+    matchLabels: {{- include "application.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "application.selectorLabels" . | nindent 8 }}
+    spec:
+      # serviceAccountName created by the Cloud Platform environment
+      serviceAccountName: {{ .Values.app.deployment.serviceAccountName }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.app.deployment.image.repository }}:{{ .Values.app.deployment.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - "ALL"
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: APP_ENV
+              value: {{ .Values.app.deployment.env.APP_ENV | quote }}
+            - name: AUTH0_CLIENT_ID
+              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_ID | quote }}
+            - name: AUTH0_CLIENT_SECRET
+              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_SECRET | quote }}
+            - name: AUTH0_DOMAIN
+              value: {{ .Values.app.deployment.env.AUTH0_DOMAIN | quote }}
+            - name: APP_BASE_URL
+              value: "https://{{ .Values.app.ingress.primaryHost }}"
+            - name: COH_REPORT_S3_URI
+              value: {{ .Values.app.deployment.env.COH_REPORT_S3_URI | quote }}
+          ports:
+            - name: http
+              containerPort: 8501

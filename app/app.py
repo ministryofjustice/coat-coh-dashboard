@@ -6,12 +6,16 @@ import plotly.express as px
 import streamlit as st
 import numpy as np
 
+from auth import require_auth0_login
+from s3_data import download_csv_from_s3
 
 st.set_page_config(
     page_title="AWS Cost Optimization Hub Dashboard",
     page_icon="💰",
     layout="wide",
 )
+
+require_auth0_login()
 
 st.title("AWS Cost Optimization Hub Recommendations Dashboard")
 st.caption("Local CORA-style dashboard for AWS Cost Optimization Hub CSV exports")
@@ -213,48 +217,16 @@ def make_treemap(data, path, values, title):
 
 
 # -----------------------------
-# File input
+# Data input
 # -----------------------------
-st.sidebar.header("Data input")
-uploaded_file = st.sidebar.file_uploader(
-    "Upload AWS Cost Optimization Hub CSV export",
-    type=["csv"],
-)
 
-sample_hint = st.sidebar.checkbox("Show expected columns", value=False)
-if sample_hint:
-    st.sidebar.write(
-        [
-            "estimatedMonthlySavings",
-            "accountId",
-            "accountName",
-            "region",
-            "currentResourceType",
-            "resourceId",
-            "actionType",
-            "currentResourceSummary",
-            "recommendedResourceSummary",
-            "estimatedMonthlyCost",
-            "estimatedSavingsPercentage",
-            "lastRefreshTimestamp",
-            "recommendationId",
-            "implementationEffort",
-            "tags",
-            "restartNeeded",
-            "rollbackPossible",
-            "recommendationLookbackPeriodInDays",
-            "source",
-            "currencyCode",
-            "recommendedResourceType",
-            "resourceArn",
-        ]
-    )
-
-if not uploaded_file:
-    st.info("Upload your CSV file in the left sidebar to start.")
+try:
+    csv_file = download_csv_from_s3()
+    df = load_data(csv_file)
+except Exception as exc:
+    st.error("Unable to load the Cost Optimization Hub report from S3.")
+    st.exception(exc)
     st.stop()
-
-df = load_data(uploaded_file)
 
 if df.empty:
     st.warning("The uploaded CSV contains no rows.")
