@@ -64,7 +64,6 @@ jobs:
             helm/coat-coh-dashboard \
             --install \
             --force \
-            --server-side=false \
             --wait \
             --timeout 10m \
             --namespace ${KUBE_NAMESPACE} \
