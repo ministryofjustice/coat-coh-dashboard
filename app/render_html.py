@@ -23,12 +23,6 @@ CSS = """
   z-index: 999999;
 }
 
-# [data-testid="stMainBlockContainer"] {
-#   position: fixed;
-#   top: 4.5rem;
-#   height: calc(100vh - 4.5rem);
-# }
-
 /* The sidebar is itself a fixed-position element, so it must be offset
    using `top`/`height`, not `margin-top`, or it will render underneath
    the header instead of being pushed down by it. */
