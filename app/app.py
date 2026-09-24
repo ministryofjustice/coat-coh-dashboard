@@ -8,12 +8,15 @@ import numpy as np
 
 from auth import require_auth0_login
 from s3_data import download_csv_from_s3
+from render_html import render_footer, render_header
 
 st.set_page_config(
     page_title="AWS Cost Optimization Hub Dashboard",
     page_icon="💰",
     layout="wide",
 )
+
+render_header()
 
 require_auth0_login()
 
@@ -1091,3 +1094,5 @@ st.download_button(
     file_name="aws_cost_optimization_hub_enriched.csv",
     mime="text/csv",
 )
+
+render_footer()
