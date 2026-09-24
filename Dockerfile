@@ -37,6 +37,9 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Copy application code
 COPY --chown=appuser:appgroup app app
 
+# Copy Streamlit config
+COPY --chown=appuser:appgroup .streamlit .streamlit
+
 # Environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
