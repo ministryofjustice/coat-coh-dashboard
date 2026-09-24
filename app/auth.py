@@ -1,5 +1,4 @@
 import logging
-import os
 import secrets
 import time
 from urllib.parse import quote_plus, urlencode
@@ -8,19 +7,9 @@ import streamlit as st
 
 from authlib.integrations.requests_client import OAuth2Session
 
+from config import AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN, APP_ENV, AUTH_DISABLED, APP_BASE_URL
+
 logger = logging.getLogger(__name__)
-
-AUTH0_CLIENT_ID = os.getenv("AUTH0_CLIENT_ID")
-AUTH0_CLIENT_SECRET = os.getenv("AUTH0_CLIENT_SECRET")
-AUTH0_DOMAIN = (os.getenv("AUTH0_DOMAIN") or "").strip().rstrip("/")
-APP_ENV = os.getenv("APP_ENV")
-
-AUTH_DISABLED = (os.getenv("AUTH_DISABLED") or "").strip().lower() in {
-    "1",
-    "true",
-    "yes",
-    "on",
-}
 
 AUTH0_SCOPE = "openid profile email"
 
@@ -66,7 +55,7 @@ def get_application_url() -> str:
 
     When APP_BASE_URL is not set, the URL is derived from forwarded headers.
     """
-    configured_url = os.getenv("APP_BASE_URL")
+    configured_url = APP_BASE_URL
     if configured_url:
         return configured_url.rstrip("/")
 

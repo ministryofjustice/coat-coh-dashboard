@@ -2,61 +2,73 @@ import streamlit as st
 
 
 CSS = """
-<link rel="stylesheet"
-      href="/app/static/stylesheets/moj-frontend.min.css">
-<link rel="stylesheet"
-      href="/app/static/stylesheets/govuk-frontend-5.1.0.min.css">
+<link rel="stylesheet" href="/app/static/stylesheets/moj-frontend.min.css">
+<link rel="stylesheet" href="/app/static/stylesheets/govuk-frontend-5.1.0.min.css">
 
 <style>
-  .moj-header,
-  .govuk-footer {
-      margin-left: -6rem;
-      margin-right: -6rem;
-  }
+/* Replace Streamlit's fixed toolbar/header with the MoJ service header. */
+[data-testid="stHeader"] {
+  display: none;
+}
 
-  .govuk-footer {
-      margin-top: 3rem;
-  }
+[data-testid="stToolbar"] {
+  display: none;
+}
 
-  .block-container {
-      padding-top: 1rem;
-  }
+#moj-header-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999999;
+}
+
+# [data-testid="stMainBlockContainer"] {
+#   position: fixed;
+#   top: 4.5rem;
+#   height: calc(100vh - 4.5rem);
+# }
+
+/* The sidebar is itself a fixed-position element, so it must be offset
+   using `top`/`height`, not `margin-top`, or it will render underneath
+   the header instead of being pushed down by it. */
+[data-testid="stSidebar"] {
+  position: fixed;
+  top: 4.5rem;
+  height: calc(100vh - 4.5rem);
+}
+
+/* Allow the footer to span beyond the normal Streamlit content width. */
+.govuk-footer {
+  margin-top: 3rem;
+  margin-left: -6rem;
+  margin-right: -6rem;
+}
 </style>
 """
 
 
 def render_header() -> None:
-    st.markdown(
-        CSS
-        + """
-<header class="moj-header" role="banner">
-  <div class="moj-header__container">
-    <div class="moj-header__logo">
-      <img
-        src="/app/static/images/moj-logotype-crest.png"
-        alt=""
-        width="40"
-        height="40"
-        class="moj-header__logotype-crest"
-      >
-      <a
-        class="moj-header__link moj-header__link--organisation-name"
-        href="#"
-      >
-        Ministry of Justice
-      </a>
-      <a
-        class="moj-header__link moj-header__link--service-name"
-        href="/"
-      >
-        Cost Optimisation Hub Dashboard
-      </a>
+    HEADER_HTML = """
+<div id="moj-header-root">
+  <header class="moj-header" role="banner">
+    <div class="moj-header__container">
+      <div class="moj-header__logo">
+        <img src="/app/static/images/moj-logotype-crest.png" alt=""
+             width="40" height="40" class="moj-header__logotype-crest">
+        <a class="moj-header__link moj-header__link--organisation-name" href="#">
+          Ministry of Justice
+        </a>
+        <a class="moj-header__link moj-header__link--service-name" href="/">
+          Cost Optimisation Hub Dashboard
+        </a>
+      </div>
     </div>
-  </div>
-</header>
-""",
-        unsafe_allow_html=True,
-    )
+  </header>
+</div>
+"""
+
+    st.markdown(CSS + HEADER_HTML, unsafe_allow_html=True,)
 
 
 def render_footer() -> None:
