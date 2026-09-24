@@ -19,6 +19,7 @@ st.set_page_config(
 )
 
 render_header()
+render_footer()
 
 if APP_ENV:
     require_auth0_login()
@@ -1101,5 +1102,3 @@ st.download_button(
     file_name="aws_cost_optimization_hub_enriched.csv",
     mime="text/csv",
 )
-
-render_footer()

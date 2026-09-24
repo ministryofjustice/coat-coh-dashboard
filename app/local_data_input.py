@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 def manual_file_upload():
     st.sidebar.header("Data input")
     uploaded_file = st.sidebar.file_uploader(
