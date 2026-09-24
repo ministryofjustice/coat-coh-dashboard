@@ -8,6 +8,9 @@ import numpy as np
 
 from auth import require_auth0_login
 from s3_data import download_csv_from_s3
+from render_html import render_footer, render_header
+from config import APP_ENV
+from local_data_input import manual_file_upload
 
 st.set_page_config(
     page_title="AWS Cost Optimization Hub Dashboard",
@@ -15,7 +18,11 @@ st.set_page_config(
     layout="wide",
 )
 
-require_auth0_login()
+render_header()
+render_footer()
+
+if APP_ENV:
+    require_auth0_login()
 
 st.title("AWS Cost Optimization Hub Recommendations Dashboard")
 st.caption("Local CORA-style dashboard for AWS Cost Optimization Hub CSV exports")
@@ -220,13 +227,17 @@ def make_treemap(data, path, values, title):
 # Data input
 # -----------------------------
 
-try:
-    csv_file = download_csv_from_s3()
-    df = load_data(csv_file)
-except Exception as exc:
-    st.error("Unable to load the Cost Optimization Hub report from S3.")
-    st.exception(exc)
-    st.stop()
+if APP_ENV:
+    try:
+        csv_file = download_csv_from_s3()
+    except Exception as exc:
+        st.error("Unable to load the Cost Optimization Hub report from S3.")
+        st.exception(exc)
+        st.stop()
+else:
+    csv_file = manual_file_upload()
+
+df = load_data(csv_file)
 
 if df.empty:
     st.warning("The uploaded CSV contains no rows.")
