@@ -19,7 +19,6 @@ st.set_page_config(
 )
 
 render_header()
-render_footer()
 
 if APP_ENV:
     require_auth0_login()
@@ -233,6 +232,9 @@ if APP_ENV:
     except Exception as exc:
         st.error("Unable to load the Cost Optimization Hub report from S3.")
         st.exception(exc)
+
+        render_footer()
+
         st.stop()
 else:
     csv_file = manual_file_upload()
@@ -1102,3 +1104,5 @@ st.download_button(
     file_name="aws_cost_optimization_hub_enriched.csv",
     mime="text/csv",
 )
+
+render_footer()

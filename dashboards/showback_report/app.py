@@ -19,7 +19,6 @@ st.set_page_config(
 )
 
 render_header()
-render_footer()
 
 if APP_ENV:
     require_auth0_login()
@@ -232,6 +231,9 @@ df = load_data(csv_file)
 
 if df.empty:
     st.warning("The uploaded CSV contains no rows.")
+
+    render_footer()
+
     st.stop()
 
 currency = (
@@ -1093,3 +1095,5 @@ st.download_button(
     file_name="aws_cost_optimization_hub_enriched.csv",
     mime="text/csv",
 )
+
+render_footer()
