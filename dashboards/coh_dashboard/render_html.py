@@ -16,7 +16,6 @@ CSS = """
 }
 
 [data-testid="stAppViewContainer"] #moj-header-root {
-  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -33,7 +32,6 @@ CSS = """
 }
 
 [data-testid="stAppViewContainer"] .govuk-footer {
-  position: fixed;
   left: 0;
   bottom: 0;
   width: 100vw;
