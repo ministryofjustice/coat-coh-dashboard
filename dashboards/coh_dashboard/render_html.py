@@ -15,7 +15,8 @@ CSS = """
   display: none;
 }
 
-[data-testid="stAppViewContainer"] #moj-header-root {
+#moj-header-root {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -31,7 +32,8 @@ CSS = """
   height: calc(100vh - 4.5rem);
 }
 
-[data-testid="stAppViewContainer"] .govuk-footer {
+.govuk-footer {
+  position: fixed;
   left: 0;
   bottom: 0;
   width: 100vw;
