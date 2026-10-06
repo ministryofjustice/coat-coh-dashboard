@@ -61,7 +61,9 @@ metadata:
 spec:
   replicas: {{ .Values.app.deployment.replicaCount }}
   selector:
-    matchLabels: {{- include "application.selectorLabels" . | nindent 6 }}
+    matchLabels:
+      app.kubernetes.io/name: showback-report
+      app.kubernetes.io/instance: showback-report
   template:
     metadata:
       labels:
