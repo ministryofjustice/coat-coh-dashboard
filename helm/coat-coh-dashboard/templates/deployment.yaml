@@ -47,3 +47,54 @@ spec:
           ports:
             - name: http
               containerPort: 8501
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: showback-report
+  labels:
+    helm.sh/chart: coat-coh-dashboard-0.1.0
+    app.kubernetes.io/name: showback-report
+    app.kubernetes.io/instance: showback-report
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: {{ .Values.app.deployment.replicaCount }}
+  selector:
+    matchLabels: {{- include "application.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: showback-report
+        app.kubernetes.io/instance: showback-report
+    spec:
+      # serviceAccountName created by the Cloud Platform environment
+      serviceAccountName: coat-mvp-dashboards-dev-sa
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: showback-report
+          image: "{{ .Values.app.deployment.image.repository }}:{{ .Values.app.deployment.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - "ALL"
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: AUTH0_CLIENT_ID
+              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_ID | quote }}
+            - name: AUTH0_CLIENT_SECRET
+              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_SECRET | quote }}
+            - name: AUTH0_DOMAIN
+              value: {{ .Values.app.deployment.env.AUTH0_DOMAIN | quote }}
+            - name: APP_BASE_URL
+              value: "https://{{ .Values.app.ingress.primaryHost }}/showback-report"
+          ports:
+            - name: http
+              containerPort: 8501

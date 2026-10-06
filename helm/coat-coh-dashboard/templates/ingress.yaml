@@ -20,10 +20,17 @@ spec:
     - host: {{ .Values.app.ingress.primaryHost }}
       http:
         paths:
-          - path: /
+          - path: /coh-dashboard
             pathType: ImplementationSpecific
             backend:
               service:
                 name: {{ $fullName }}
+                port:
+                  number: 80
+          - path: /showback-report
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: showback-report
                 port:
                   number: 80
