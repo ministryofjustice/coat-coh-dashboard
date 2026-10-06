@@ -224,18 +224,9 @@ def make_treemap(data, path, values, title):
 
 
 # -----------------------------
-# Data input
+# Data load
 # -----------------------------
-
-if APP_ENV:
-    try:
-        csv_file = download_csv_from_s3()
-    except Exception as exc:
-        st.error("Unable to load the Cost Optimization Hub report from S3.")
-        st.exception(exc)
-        st.stop()
-else:
-    csv_file = manual_file_upload()
+csv_file = manual_file_upload()
 
 df = load_data(csv_file)
 
