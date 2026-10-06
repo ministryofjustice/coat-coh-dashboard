@@ -29,8 +29,10 @@ helm-deploy:
         --timeout 10m \
         --namespace coat-coh-dashboard-dev \
         --values=helm/coat-coh-dashboard/values-dev.yaml \
-        --set app.deployment.image.repository=levgorbunov1/coat-coh-dashboard \
-        --set app.deployment.image.tag=latest \
+        --set app.deployment.coh_dashboard.image.repository=levgorbunov1/coh_dashboard \
+        --set app.deployment.coh_dashboard.image.tag=latest \
+		--set app.deployment.showback_report.image.repository=levgorbunov1/showback_report \
+        --set app.deployment.showback_report.image.tag=latest \
 		--set app.deployment.env.AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
 		--set app.deployment.env.AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
         --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" \

@@ -21,7 +21,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.app.deployment.image.repository }}:{{ .Values.app.deployment.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.app.deployment.coh_dashboard.image.repository }}:{{ .Values.app.deployment.coh_dashboard.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -76,7 +76,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: showback-report
-          image: "{{ .Values.app.deployment.image.repository }}:{{ .Values.app.deployment.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.app.deployment.showback_report.image.repository }}:{{ .Values.app.deployment.showback_report.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
