@@ -32,10 +32,10 @@ COPY --chown=appuser:appgroup requirements.txt ./
 RUN python3 -m venv .venv && source .venv/bin/activate && \
     pip install -r requirements.txt
 
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/coh_dashboard/.venv/bin:$PATH"
 
 # Copy application code
-COPY --chown=appuser:appgroup app app
+COPY --chown=appuser:appgroup /dashboards/coh_dashboard coh_dashboard
 
 # Copy Streamlit config
 COPY --chown=appuser:appgroup .streamlit .streamlit
@@ -50,4 +50,4 @@ EXPOSE 8501
 # Healthcheck
 HEALTHCHECK --interval=60s --timeout=30s CMD curl -I -XGET http://localhost:8501 || exit 1
 
-ENTRYPOINT ["/home/coat-coh-dashboard/.venv/bin/streamlit", "run", "./app/app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+ENTRYPOINT ["/home/coat-coh-dashboard/.venv/bin/streamlit", "run", "./coh_dashboard/app.py", "--server.address=0.0.0.0", "--server.port=8501"]

@@ -1,23 +1,23 @@
 run-local:
 	python3 -m venv .venv && source .venv/bin/activate
 	pip install -r requirements.txt
-	streamlit run ./app/app.py
+	streamlit run ./dashboards/$(DASHBOARD)/app.py
 
 build:
-	docker build -t coat-coh-dashboard:latest .
+	docker build -t $(DASHBOARD):latest .
 
 run:
 	docker run -d -p 8501:8501 \
-		--name coat-coh-dashboard \
+		--name $(DASHBOARD) \
 		-e AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
 		-e AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
 		-e AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" \
 		-e APP_BASE_URL="http://localhost:8501" \
 		-e APP_ENV="local" \
-		coat-coh-dashboard:latest
+		$(DASHBOARD):latest
 
 stop:
-	docker rm -f coat-coh-dashboard
+	docker rm -f $(DASHBOARD)
 
 helm-deploy:
 	helm upgrade coat-coh-dashboard \
@@ -38,11 +38,3 @@ helm-deploy:
 
 helm-uninstall:
 	helm uninstall coat-coh-dashboard --namespace coat-coh-dashboard-dev
-
-push-dockerhub:
-	docker build -t levgorbunov1/coat-coh-dashboard:latest .
-	docker login
-	docker buildx build \
-		--platform linux/amd64 \
-		-t levgorbunov1/coat-coh-dashboard:latest \
-		--push .

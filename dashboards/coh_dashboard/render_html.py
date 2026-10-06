@@ -15,8 +15,7 @@ CSS = """
   display: none;
 }
 
-#moj-header-root {
-  position: fixed;
+[data-testid="stAppViewContainer"] #moj-header-root {
   top: 0;
   left: 0;
   right: 0;
