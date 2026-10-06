@@ -4,7 +4,7 @@ run-local:
 	streamlit run ./dashboards/$(DASHBOARD)/app.py
 
 build:
-	docker build -t $(DASHBOARD):latest .
+	docker build --build-arg DASHBOARD=$(DASHBOARD) -t $(DASHBOARD):latest .
 
 run:
 	docker run -d -p 8501:8501 \

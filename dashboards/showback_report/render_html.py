@@ -55,7 +55,7 @@ def render_header() -> None:
           Ministry of Justice
         </a>
         <a class="moj-header__link moj-header__link--service-name" href="/">
-          Cost Optimisation Hub Dashboard
+          Showback Report
         </a>
       </div>
     </div>
