@@ -2,8 +2,8 @@ import streamlit as st
 
 
 CSS = """
-<link rel="stylesheet" href="/app/static/stylesheets/moj-frontend.min.css">
-<link rel="stylesheet" href="/app/static/stylesheets/govuk-frontend-5.1.0.min.css">
+<link rel="stylesheet" href="/showback_report/static/stylesheets/moj-frontend.min.css">
+<link rel="stylesheet" href="/showback_report/static/stylesheets/govuk-frontend-5.1.0.min.css">
 
 <style>
 /* Replace Streamlit's fixed toolbar/header with the MoJ service header. */
@@ -49,7 +49,7 @@ def render_header() -> None:
   <header class="moj-header" role="banner">
     <div class="moj-header__container">
       <div class="moj-header__logo">
-        <img src="/app/static/images/moj-logotype-crest.png" alt=""
+        <img src="/showback_report/static/images/moj-logotype-crest.png" alt=""
              width="40" height="40" class="moj-header__logotype-crest">
         <a class="moj-header__link moj-header__link--organisation-name" href="#">
           Ministry of Justice
