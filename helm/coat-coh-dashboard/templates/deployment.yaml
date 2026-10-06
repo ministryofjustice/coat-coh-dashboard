@@ -101,6 +101,10 @@ spec:
               value: "https://{{ .Values.app.ingress.primaryHost }}/showback-report"
             - name: STREAMLIT_SERVER_BASE_URL_PATH
               value: "showback-report"
+            - name: APP_ENV
+              value: {{ .Values.app.deployment.env.APP_ENV | quote }}
+            - name: COH_REPORT_S3_URI
+              value: {{ .Values.app.deployment.env.COH_REPORT_S3_URI | quote }}
           ports:
             - name: http
               containerPort: 8501
