@@ -13,7 +13,7 @@ run:
 		-e AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
 		-e AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" \
 		-e APP_BASE_URL="http://localhost:8501" \
-		-e APP_ENV="local" \
+		-e AUTH_DISABLED=true \
 		$(DASHBOARD):latest
 
 stop:
