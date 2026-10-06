@@ -41,7 +41,7 @@ spec:
             - name: AUTH0_DOMAIN
               value: {{ .Values.app.deployment.env.AUTH0_DOMAIN | quote }}
             - name: APP_BASE_URL
-              value: "https://{{ .Values.app.ingress.primaryHost }}"
+              value: "https://{{ .Values.app.ingress.primaryHost }}/coh-dashboard"
             - name: COH_REPORT_S3_URI
               value: {{ .Values.app.deployment.env.COH_REPORT_S3_URI | quote }}
             - name: STREAMLIT_SERVER_BASE_URL_PATH
