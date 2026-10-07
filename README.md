@@ -16,3 +16,8 @@ To stop the container:
 ```
 make stop DASHBOARD=coh_dashboard
 ```
+
+# Dashboards
+
+- https://coat-coh-dashboard-dev.cloud-platform.service.justice.gov.uk/showback-report/
+- https://coat-coh-dashboard-dev.cloud-platform.service.justice.gov.uk/coh-dashboard
