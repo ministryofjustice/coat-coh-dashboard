@@ -29,14 +29,27 @@ helm-deploy:
         --timeout 10m \
         --namespace coat-coh-dashboard-dev \
         --values=helm/coat-coh-dashboard/values-dev.yaml \
-        --set app.deployment.coh_dashboard.image.repository=levgorbunov1/coh_dashboard \
-        --set app.deployment.coh_dashboard.image.tag=latest \
-		--set app.deployment.showback_report.image.repository=levgorbunov1/showback_report \
-        --set app.deployment.showback_report.image.tag=latest \
+        --set app.deployment.dashboards.coh_dashboard.image.repository=levgorbunov1/coh_dashboard \
+        --set app.deployment.dashboards.coh_dashboard.image.tag=latest \
+		--set app.deployment.dashboards.showback_report.image.repository=levgorbunov1/showback_report \
+        --set app.deployment.dashboards.showback_report.image.tag=latest \
 		--set app.deployment.env.AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
 		--set app.deployment.env.AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
         --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" \
 		--set app.deployment.env.APP_BASE_URL=coat-coh-dashboard-dev.cloud-platform.service.justice.gov.uk
+
+helm-template:
+	helm template coat-coh-dashboard \
+        helm/coat-coh-dashboard \
+        --namespace coat-coh-dashboard-dev \
+        --values=helm/coat-coh-dashboard/values-dev.yaml \
+        --set app.deployment.dashboards.coh_dashboard.image.repository=levgorbunov1/coh_dashboard \
+        --set app.deployment.dashboards.coh_dashboard.image.tag=latest \
+		--set app.deployment.dashboards.showback_report.image.repository=levgorbunov1/showback_report \
+        --set app.deployment.dashboards.showback_report.image.tag=latest \
+		--set app.deployment.env.AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
+		--set app.deployment.env.AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
+        --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}"
 
 helm-uninstall:
 	helm uninstall coat-coh-dashboard --namespace coat-coh-dashboard-dev

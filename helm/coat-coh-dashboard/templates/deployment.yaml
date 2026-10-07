@@ -1,86 +1,35 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ include "application.fullname" . }}
-  labels:
-    {{- include "application.labels" . | nindent 4 }}
-spec:
-  replicas: {{ .Values.app.deployment.replicaCount }}
-  selector:
-    matchLabels: {{- include "application.selectorLabels" . | nindent 6 }}
-  template:
-    metadata:
-      labels:
-        {{- include "application.selectorLabels" . | nindent 8 }}
-    spec:
-      # serviceAccountName created by the Cloud Platform environment
-      serviceAccountName: {{ .Values.app.deployment.serviceAccountName }}
-      securityContext:
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
-      containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.app.deployment.coh_dashboard.image.repository }}:{{ .Values.app.deployment.coh_dashboard.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: IfNotPresent
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - "ALL"
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-          env:
-            - name: APP_ENV
-              value: {{ .Values.app.deployment.env.APP_ENV | quote }}
-            - name: AUTH0_CLIENT_ID
-              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_ID | quote }}
-            - name: AUTH0_CLIENT_SECRET
-              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_SECRET | quote }}
-            - name: AUTH0_DOMAIN
-              value: {{ .Values.app.deployment.env.AUTH0_DOMAIN | quote }}
-            - name: APP_BASE_URL
-              value: "https://{{ .Values.app.ingress.primaryHost }}/coh-dashboard"
-            - name: COH_REPORT_S3_URI
-              value: {{ .Values.app.deployment.env.COH_REPORT_S3_URI | quote }}
-            - name: STREAMLIT_SERVER_BASE_URL_PATH
-              value: "coh-dashboard"
-          ports:
-            - name: http
-              containerPort: 8501
+{{- $root := . -}}
+{{- range $key, $dashboard := .Values.app.deployment.dashboards }}
+{{- $context := dict "root" $root "key" $key "dashboard" $dashboard }}
+{{- $basePath := default $dashboard.name $dashboard.basePath | trimAll "/" }}
+{{- $env := mergeOverwrite (deepCopy (default (dict) $root.Values.app.deployment.env)) (default (dict) $dashboard.env) }}
+{{- $_ := set $env "APP_BASE_URL" (printf "https://%s/%s" $root.Values.app.ingress.primaryHost $basePath) }}
+{{- $_ := set $env "STREAMLIT_SERVER_BASE_URL_PATH" $basePath }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: showback-report
+  name: {{ include "application.dashboard.fullname" $context }}
   labels:
-    helm.sh/chart: coat-coh-dashboard-0.1.0
-    app.kubernetes.io/name: showback-report
-    app.kubernetes.io/instance: showback-report
-    app.kubernetes.io/version: "1.16.0"
-    app.kubernetes.io/managed-by: Helm
+    {{- include "application.dashboard.labels" $context | nindent 4 }}
 spec:
-  replicas: {{ .Values.app.deployment.replicaCount }}
+  replicas: {{ $dashboard.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: showback-report
-      app.kubernetes.io/instance: showback-report
+      {{- include "application.dashboard.selectorLabels" $context | nindent 6 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: showback-report
-        app.kubernetes.io/instance: showback-report
+        {{- include "application.dashboard.selectorLabels" $context | nindent 8 }}
     spec:
-      # serviceAccountName created by the Cloud Platform environment
-      serviceAccountName: coat-mvp-dashboards-dev-sa
+      serviceAccountName: {{ $dashboard.serviceAccountName | quote }}
       securityContext:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - name: showback-report
-          image: "{{ .Values.app.deployment.showback_report.image.repository }}:{{ .Values.app.deployment.showback_report.image.tag | default .Chart.AppVersion }}"
+        - name: {{ $dashboard.name | quote }}
+          image: "{{ $dashboard.image.repository }}:{{ $dashboard.image.tag | default $root.Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -91,20 +40,11 @@ spec:
             seccompProfile:
               type: RuntimeDefault
           env:
-            - name: AUTH0_CLIENT_ID
-              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_ID | quote }}
-            - name: AUTH0_CLIENT_SECRET
-              value: {{ .Values.app.deployment.env.AUTH0_CLIENT_SECRET | quote }}
-            - name: AUTH0_DOMAIN
-              value: {{ .Values.app.deployment.env.AUTH0_DOMAIN | quote }}
-            - name: APP_BASE_URL
-              value: "https://{{ .Values.app.ingress.primaryHost }}/showback-report"
-            - name: STREAMLIT_SERVER_BASE_URL_PATH
-              value: "showback-report"
-            - name: APP_ENV
-              value: {{ .Values.app.deployment.env.APP_ENV | quote }}
-            - name: COH_REPORT_S3_URI
-              value: {{ .Values.app.deployment.env.COH_REPORT_S3_URI | quote }}
+            {{- range $name, $value := $env }}
+            - name: {{ $name }}
+              value: {{ $value | quote }}
+            {{- end }}
           ports:
             - name: http
-              containerPort: 8501
+              containerPort: {{ $root.Values.app.service.targetPort }}
+{{- end }}

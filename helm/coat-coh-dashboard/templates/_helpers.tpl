@@ -7,8 +7,6 @@ Expand the name of the chart.
 
 {{/*
 Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
 */}}
 {{- define "application.fullname" -}}
 {{- if .Values.fullnameOverride }}
@@ -48,4 +46,34 @@ Selector labels
 {{- define "application.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "application.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Dashboard resource full name.
+Context: dict "root" $ "key" $key "dashboard" $dashboard
+*/}}
+{{- define "application.dashboard.fullname" -}}
+{{- $name := required (printf "app.deployment.dashboards.%s.name is required" .key) .dashboard.name -}}
+{{- $name | trunc 63 | trimSuffix "-" -}}
+{{- end }}
+
+{{/*
+Dashboard selector labels.
+*/}}
+{{- define "application.dashboard.selectorLabels" -}}
+{{- $name := required (printf "app.deployment.dashboards.%s.name is required" .key) .dashboard.name -}}
+app.kubernetes.io/name: {{ $name }}
+app.kubernetes.io/instance: {{ $name }}
+{{- end }}
+
+{{/*
+Dashboard labels.
+*/}}
+{{- define "application.dashboard.labels" -}}
+helm.sh/chart: {{ include "application.chart" .root }}
+{{ include "application.dashboard.selectorLabels" . }}
+{{- if .root.Chart.AppVersion }}
+app.kubernetes.io/version: {{ .root.Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .root.Release.Service }}
 {{- end }}
