@@ -19,6 +19,9 @@ run:
 stop:
 	docker rm -f $(DASHBOARD)
 
+deploy-sa:
+	kubectl apply -f helm/ad-hoc/serviceaccount.yaml -n coat-coh-dashboard-dev
+
 helm-deploy:
 	helm upgrade coat-coh-dashboard \
         helm/coat-coh-dashboard \
