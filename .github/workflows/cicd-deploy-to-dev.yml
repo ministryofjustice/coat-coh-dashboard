@@ -25,6 +25,10 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        dashboard: [coh_dashboard, showback_report]
     steps:
       - uses: actions/checkout@v4
 
@@ -36,8 +40,8 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076  # v2.0.1
         id: login-ecr
       - run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build --build-arg DASHBOARD=${{ matrix.dashboard }} -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG-${{ matrix.dashboard }} .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG-${{ matrix.dashboard }}
 
   deploy-to-dev:
     needs: build-push
@@ -66,8 +70,10 @@ jobs:
             --timeout 10m \
             --namespace ${KUBE_NAMESPACE} \
             --values=helm/coat-coh-dashboard/values-dev.yaml \
-            --set app.deployment.image.repository=${ECR_REGISTRY}/${ECR_REPOSITORY} \
-            --set app.deployment.image.tag=${IMAGE_TAG} \
+            --set app.deployment.dashboards.coh_dashboard.image.repository=${ECR_REGISTRY}/${ECR_REPOSITORY} \
+            --set app.deployment.dashboards.coh_dashboard.image.tag=${IMAGE_TAG}-coh_dashboard \
+            --set app.deployment.dashboards.showback_report.image.repository=${ECR_REGISTRY}/${ECR_REPOSITORY} \
+            --set app.deployment.dashboards.showback_report.image.tag=${IMAGE_TAG}-showback_report \
             --set app.deployment.env.AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
             --set app.deployment.env.AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
             --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}"

@@ -1,3 +1,4 @@
+{{- $root := . -}}
 {{- $fullName := include "application.fullname" . -}}
 ---
 apiVersion: networking.k8s.io/v1
@@ -20,10 +21,14 @@ spec:
     - host: {{ .Values.app.ingress.primaryHost }}
       http:
         paths:
-          - path: /
+          {{- range $key, $dashboard := .Values.app.deployment.dashboards }}
+          {{- $context := dict "root" $root "key" $key "dashboard" $dashboard }}
+          {{- $basePath := default $dashboard.name $dashboard.basePath | trimAll "/" }}
+          - path: {{ printf "/%s" $basePath }}
             pathType: ImplementationSpecific
             backend:
               service:
-                name: {{ $fullName }}
+                name: {{ include "application.dashboard.fullname" $context }}
                 port:
-                  number: 80
+                  number: {{ $root.Values.app.service.port }}
+          {{- end }}

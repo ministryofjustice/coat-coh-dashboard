@@ -1,11 +1,18 @@
+{{- $root := . -}}
+{{- range $key, $dashboard := .Values.app.deployment.dashboards }}
+{{- $context := dict "root" $root "key" $key "dashboard" $dashboard }}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "application.fullname" . }}
-  labels: {{- include "application.labels" . | nindent 4 }}
+  name: {{ include "application.dashboard.fullname" $context }}
+  labels:
+    {{- include "application.dashboard.labels" $context | nindent 4 }}
 spec:
   ports:
-    - port: 80
-      targetPort: 8501
+    - port: {{ $root.Values.app.service.port }}
+      targetPort: {{ $root.Values.app.service.targetPort }}
       name: https
-  selector: {{- include "application.selectorLabels" . | nindent 4 }}
+  selector:
+    {{- include "application.dashboard.selectorLabels" $context | nindent 4 }}
+{{- end }}

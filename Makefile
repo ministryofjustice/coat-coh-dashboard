@@ -1,23 +1,26 @@
 run-local:
 	python3 -m venv .venv && source .venv/bin/activate
 	pip install -r requirements.txt
-	streamlit run ./app/app.py
+	streamlit run ./dashboards/$(DASHBOARD)/app.py
 
 build:
-	docker build -t coat-coh-dashboard:latest .
+	docker build --build-arg DASHBOARD=$(DASHBOARD) -t $(DASHBOARD):latest .
 
 run:
 	docker run -d -p 8501:8501 \
-		--name coat-coh-dashboard \
+		--name $(DASHBOARD) \
 		-e AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
 		-e AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
 		-e AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" \
 		-e APP_BASE_URL="http://localhost:8501" \
-		-e APP_ENV="local" \
-		coat-coh-dashboard:latest
+		-e AUTH_DISABLED=true \
+		$(DASHBOARD):latest
 
 stop:
-	docker rm -f coat-coh-dashboard
+	docker rm -f $(DASHBOARD)
+
+deploy-sa:
+	kubectl apply -f helm/ad-hoc/serviceaccount.yaml -n coat-coh-dashboard-dev
 
 helm-deploy:
 	helm upgrade coat-coh-dashboard \
@@ -29,12 +32,26 @@ helm-deploy:
         --timeout 10m \
         --namespace coat-coh-dashboard-dev \
         --values=helm/coat-coh-dashboard/values-dev.yaml \
-        --set app.deployment.image.repository=levgorbunov1/coat-coh-dashboard \
-        --set app.deployment.image.tag=latest \
+        --set app.deployment.dashboards.coh_dashboard.image.repository=levgorbunov1/coh_dashboard \
+        --set app.deployment.dashboards.coh_dashboard.image.tag=latest \
+		--set app.deployment.dashboards.showback_report.image.repository=levgorbunov1/showback_report \
+        --set app.deployment.dashboards.showback_report.image.tag=latest \
 		--set app.deployment.env.AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
 		--set app.deployment.env.AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
-        --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" \
-		--set app.deployment.env.APP_BASE_URL=coat-coh-dashboard-dev.cloud-platform.service.justice.gov.uk
+        --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}"
+
+helm-template:
+	helm template coat-coh-dashboard \
+        helm/coat-coh-dashboard \
+        --namespace coat-coh-dashboard-dev \
+        --values=helm/coat-coh-dashboard/values-dev.yaml \
+        --set app.deployment.dashboards.coh_dashboard.image.repository=levgorbunov1/coh_dashboard \
+        --set app.deployment.dashboards.coh_dashboard.image.tag=latest \
+		--set app.deployment.dashboards.showback_report.image.repository=levgorbunov1/showback_report \
+        --set app.deployment.dashboards.showback_report.image.tag=latest \
+		--set app.deployment.env.AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
+		--set app.deployment.env.AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
+        --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}"
 
 helm-uninstall:
 	helm uninstall coat-coh-dashboard --namespace coat-coh-dashboard-dev
@@ -44,5 +61,6 @@ push-dockerhub:
 	docker login
 	docker buildx build \
 		--platform linux/amd64 \
-		-t levgorbunov1/coat-coh-dashboard:latest \
+		--build-arg DASHBOARD=$(DASHBOARD) \
+		-t levgorbunov1/$(DASHBOARD):latest \
 		--push .
