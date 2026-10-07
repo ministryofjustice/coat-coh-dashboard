@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 env:
   # A majority of the secrets generated here come from the cloud-platform-environments repository.
   KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
