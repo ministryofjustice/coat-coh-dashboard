@@ -35,8 +35,7 @@ helm-deploy:
         --set app.deployment.dashboards.showback_report.image.tag=latest \
 		--set app.deployment.env.AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
 		--set app.deployment.env.AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
-        --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" \
-		--set app.deployment.env.APP_BASE_URL=coat-coh-dashboard-dev.cloud-platform.service.justice.gov.uk
+        --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}"
 
 helm-template:
 	helm template coat-coh-dashboard \
