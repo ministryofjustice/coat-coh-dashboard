@@ -1,4 +1,4 @@
-FROM python:3.12.13-alpine3.22
+FROM python:3.12.15-alpine3.24
 
 LABEL maintainer="cloud-optimisation-and-accountability <CloudOptimisationandAccountabilityTeam@justice.gov.uk>"
 
