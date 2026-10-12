@@ -24,7 +24,7 @@ app:
       showback_report:
         name: "showback-report"
         replicaCount: 1
-        serviceAccountName: "coat-mvp-dashboards-dev-sa"
+        serviceAccountName: "coat-showback-mvp-dev"
         image:
           repository: ""
           tag: ""
