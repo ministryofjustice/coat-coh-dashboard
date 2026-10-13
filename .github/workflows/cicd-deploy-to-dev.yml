@@ -19,6 +19,11 @@ env:
   AUTH0_CLIENT_SECRET: ${{ secrets.DEV_AUTH0_APP_CLIENT_SECRET }}
   AUTH0_DOMAIN: ${{ secrets.DEV_AUTH0_DOMAIN }}
 
+  ATHENA_REGION: ${{ secrets.ATHENA_REGION }}
+  ATHENA_ROLE: ${{ secrets.ATHENA_ROLE }}
+  ATHENA_OUTPUT_LOCATION: ${{ secrets.ATHENA_OUTPUT_LOCATION }}
+  ATHENA_WORKGROUP: ${{ secrets.ATHENA_WORKGROUP }}
+
 jobs:
   build-push:
     runs-on: ubuntu-latest
@@ -74,6 +79,10 @@ jobs:
             --set app.deployment.dashboards.coh_dashboard.image.tag=${IMAGE_TAG}-coh_dashboard \
             --set app.deployment.dashboards.showback_report.image.repository=${ECR_REGISTRY}/${ECR_REPOSITORY} \
             --set app.deployment.dashboards.showback_report.image.tag=${IMAGE_TAG}-showback_report \
+            --set app.deployment.dashboards.showback_report.env.ATHENA_REGION="${ATHENA_REGION}" \
+            --set app.deployment.dashboards.showback_report.env.ATHENA_ROLE="${ATHENA_ROLE}" \
+            --set app.deployment.dashboards.showback_report.env.ATHENA_OUTPUT_LOCATION="${ATHENA_OUTPUT_LOCATION}" \
+            --set app.deployment.dashboards.showback_report.env.ATHENA_WORKGROUP="${ATHENA_WORKGROUP}" \
             --set app.deployment.env.AUTH0_DOMAIN="${AUTH0_DOMAIN}" \
             --set app.deployment.env.AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}" \
             --set app.deployment.env.AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}"
