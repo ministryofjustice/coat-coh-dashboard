@@ -16,3 +16,13 @@ AUTH_DISABLED = (os.getenv("AUTH_DISABLED") or "").strip().lower() in {
 }
 
 APP_BASE_URL = os.getenv("APP_BASE_URL")
+
+# Athena config
+
+ATHENA_REGION = os.getenv("ATHENA_REGION")
+
+ATHENA_ROLE = os.getenv("ATHENA_ROLE")
+
+ATHENA_OUTPUT_LOCATION = os.getenv("ATHENA_OUTPUT_LOCATION")
+
+ATHENA_WORKGROUP = os.getenv("ATHENA_WORKGROUP")

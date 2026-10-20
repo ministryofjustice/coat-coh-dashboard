@@ -24,6 +24,13 @@ render_footer()
 if APP_ENV:
     require_auth0_login()
 
+## Example of Athena interface
+
+# from services.athena_service import AthenaService
+# athena_service = AthenaService()
+# results = athena_service.run_query("cloud_optimisation_datamarts", "SELECT * FROM fct_daily_cost LIMIT 10")
+# print(results)
+
 st.title("AWS Cost Optimization Hub Recommendations Dashboard")
 st.caption("Local CORA-style dashboard for AWS Cost Optimization Hub CSV exports")
 
