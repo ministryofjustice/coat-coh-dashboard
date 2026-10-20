@@ -11,6 +11,7 @@ from s3_data import download_csv_from_s3
 from render_html import render_footer, render_header
 from config import APP_ENV
 from local_data_input import manual_file_upload
+from services.athena_service import AthenaService
 
 st.set_page_config(
     page_title="AWS Cost Optimization Hub Dashboard",
@@ -23,6 +24,12 @@ render_footer()
 
 if APP_ENV:
     require_auth0_login()
+
+athena_service = AthenaService()
+
+results = athena_service.run_query("cloud_optimisation_datamarts", "SELECT * FROM fct_daily_cost LIMIT 10")
+
+print(results)
 
 st.title("AWS Cost Optimization Hub Recommendations Dashboard")
 st.caption("Local CORA-style dashboard for AWS Cost Optimization Hub CSV exports")
